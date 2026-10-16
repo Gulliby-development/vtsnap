@@ -28,7 +28,7 @@ With `--help` as the only argument, vtsnap prints this usage and exits successfu
 usage: vtsnap render [--cols N] [--rows N] [--format text|ansi|json] [--scrollback] [--at SECONDS] FILE
        vtsnap frames --every SECONDS [--cols N] [--rows N] [--format text|ansi] FILE
        vtsnap check [--cols N] [--rows N] FILE
-       vtsnap diff [--cols N] [--rows N] A B
+       vtsnap diff [--cols N] [--rows N] [--ignore-style] A B
 ```
 
 The following render excerpt uses `build.log`. In the listings, `<ESC>` and `<CR>` denote the byte values 1B and 0D; these markers are explanatory notation, not literal file text.
@@ -88,9 +88,15 @@ The default `render` format is `text`. Text output removes trailing spaces from 
 - `render FILE` replays an input and prints the screen. Use `--format text|ansi|json` to select the format, `--at SECONDS` for an inclusive cast cutoff, or `--scrollback` to include main-screen history (not with JSON).
 - `frames --every SECONDS FILE` renders cast frames in text or ANSI. The interval must be greater than zero. Frames start at time zero, continue at each interval through the final output-event time, and include that final time when it is not an interval boundary.
 - `check FILE` reports terminal-cleanliness findings or prints `ok` when there are none.
-- `diff A B` compares the screens from two inputs without scrollback. It reports a size mismatch, rows with text differences (ignoring trailing spaces) or style differences, and differences in cursor position or title.
+- `diff A B` compares the screens from two inputs without scrollback. It reports a size mismatch, rows with text differences (ignoring trailing spaces) or style differences, and differences in cursor position or title. With `--ignore-style`, style differences are not looked for; text, size, cursor and title are still compared.
 
 The usage block lists the options available to each command. `--cols N` and `--rows N` accept decimal values from 1 through 500 with no leading zero. Value options accept the value as the next argument or after `=`; the last occurrence wins. The value is consumed as-is even if it begins with a hyphen. `--format` is available to `render` and `frames` (JSON only for `render`); `--at` is for `render`; `--every` is for `frames`; and `--scrollback` is a flag for `render`. Seconds values are nonnegative decimal digits with an optional fractional part; fractions are truncated after six digits, and signs, exponents, malformed values, or values outside the supported microsecond range are rejected. `--every` must be greater than zero.
+
+`--ignore-style` (a flag of `diff` only) makes the comparison ignore text styles, which helps when one recording was made with colors and the other without. With `before.log` holding `<ESC>[31merror<ESC>[0m: disk full` and `retry in 5s` on two lines, and `plain.log` holding the same two lines without the escape sequences, `diff before.log plain.log` reports a style difference in row 1 and exits with status 1, while `diff --ignore-style before.log plain.log` prints:
+
+```text
+same
+```
 
 ## Checks
 
