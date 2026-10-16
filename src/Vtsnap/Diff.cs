@@ -5,7 +5,10 @@ namespace Vtsnap;
 
 public static class Diff
 {
-    public static Result Compare(Snapshot a, Snapshot b)
+    public static Result Compare(Snapshot a, Snapshot b) =>
+        Compare(a, b, ignoreStyle: false);
+
+    public static Result Compare(Snapshot a, Snapshot b, bool ignoreStyle)
     {
         ArgumentNullException.ThrowIfNull(a);
         ArgumentNullException.ThrowIfNull(b);
@@ -45,33 +48,36 @@ public static class Diff
                 continue;
             }
 
-            int firstStyleDifference = -1;
-            int lastStyleDifference = -1;
-            for (int column = 0; column < a.Cols; column++)
+            if (!ignoreStyle)
             {
-                if (aLine[column].Style == bLine[column].Style)
+                int firstStyleDifference = -1;
+                int lastStyleDifference = -1;
+                for (int column = 0; column < a.Cols; column++)
                 {
-                    continue;
+                    if (aLine[column].Style == bLine[column].Style)
+                    {
+                        continue;
+                    }
+
+                    if (firstStyleDifference < 0)
+                    {
+                        firstStyleDifference = column;
+                    }
+
+                    lastStyleDifference = column;
                 }
 
-                if (firstStyleDifference < 0)
+                if (firstStyleDifference >= 0)
                 {
-                    firstStyleDifference = column;
+                    output.Append("row ");
+                    output.Append(Number(row + 1));
+                    output.Append(": style differs at columns ");
+                    output.Append(Number(firstStyleDifference + 1));
+                    output.Append('-');
+                    output.Append(Number(lastStyleDifference + 1));
+                    output.Append('\n');
+                    differences++;
                 }
-
-                lastStyleDifference = column;
-            }
-
-            if (firstStyleDifference >= 0)
-            {
-                output.Append("row ");
-                output.Append(Number(row + 1));
-                output.Append(": style differs at columns ");
-                output.Append(Number(firstStyleDifference + 1));
-                output.Append('-');
-                output.Append(Number(lastStyleDifference + 1));
-                output.Append('\n');
-                differences++;
             }
         }
 

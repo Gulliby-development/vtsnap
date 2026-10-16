@@ -11,7 +11,10 @@ public sealed record Parsed(
     bool Scrollback,
     long? AtMicros,
     long? EveryMicros,
-    IReadOnlyList<string> Files);
+    IReadOnlyList<string> Files)
+{
+    public bool IgnoreStyle { get; init; }
+}
 
 public static class Args
 {
@@ -49,6 +52,7 @@ public static class Args
         string? atValue = null;
         string? everyValue = null;
         bool scrollback = false;
+        bool ignoreStyle = false;
         var files = new List<string>();
 
         for (int index = 1; index < args.Length; index++)
@@ -60,7 +64,9 @@ public static class Args
                 bool hasEquals = equalsIndex >= 0;
                 string option = hasEquals ? argument[..equalsIndex] : argument;
 
-                if (!IsValueOption(command, option) && !(command == "render" && option == "--scrollback"))
+                if (!IsValueOption(command, option)
+                    && !(command == "render" && option == "--scrollback")
+                    && !(command == "diff" && option == "--ignore-style"))
                 {
                     throw new CliError($"unknown option \"{argument}\"");
                 }
@@ -73,6 +79,17 @@ public static class Args
                     }
 
                     scrollback = true;
+                    continue;
+                }
+
+                if (option == "--ignore-style")
+                {
+                    if (hasEquals)
+                    {
+                        throw new CliError($"unknown option \"{argument}\"");
+                    }
+
+                    ignoreStyle = true;
                     continue;
                 }
 
@@ -157,7 +174,10 @@ public static class Args
             scrollback,
             atMicros,
             everyMicros,
-            new ReadOnlyCollection<string>(files.ToArray()));
+            new ReadOnlyCollection<string>(files.ToArray()))
+        {
+            IgnoreStyle = ignoreStyle
+        };
     }
 
     private static bool IsValueOption(string command, string option) =>

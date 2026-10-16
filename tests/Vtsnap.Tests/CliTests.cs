@@ -9,7 +9,7 @@ public sealed class CliTests
         "usage: vtsnap render [--cols N] [--rows N] [--format text|ansi|json] [--scrollback] [--at SECONDS] FILE\n"
         + "       vtsnap frames --every SECONDS [--cols N] [--rows N] [--format text|ansi] FILE\n"
         + "       vtsnap check [--cols N] [--rows N] FILE\n"
-        + "       vtsnap diff [--cols N] [--rows N] A B\n";
+        + "       vtsnap diff [--cols N] [--rows N] [--ignore-style] A B\n";
 
     private const string BuildLog =
         "\u001b[1;32mcompiling\u001b[0m core\n"
