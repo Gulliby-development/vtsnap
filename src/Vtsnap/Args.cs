@@ -14,6 +14,8 @@ public sealed record Parsed(
     IReadOnlyList<string> Files)
 {
     public bool IgnoreStyle { get; init; }
+
+    public IReadOnlyList<string> IgnoredCodes { get; init; } = Array.Empty<string>();
 }
 
 public static class Args
@@ -51,6 +53,7 @@ public static class Args
         string? formatValue = null;
         string? atValue = null;
         string? everyValue = null;
+        string? ignoreValue = null;
         bool scrollback = false;
         bool ignoreStyle = false;
         var files = new List<string>();
@@ -125,6 +128,9 @@ public static class Args
                     case "--every":
                         everyValue = value;
                         break;
+                    case "--ignore":
+                        ignoreValue = value;
+                        break;
                 }
             }
             else
@@ -136,6 +142,7 @@ public static class Args
         int? cols = ParseDimension("--cols", colsValue);
         int? rows = ParseDimension("--rows", rowsValue);
         string format = ParseFormat(formatValue);
+        IReadOnlyList<string> ignoredCodes = ParseIgnore(ignoreValue);
 
         if (command == "frames" && format == "json")
         {
@@ -176,7 +183,8 @@ public static class Args
             everyMicros,
             new ReadOnlyCollection<string>(files.ToArray()))
         {
-            IgnoreStyle = ignoreStyle
+            IgnoreStyle = ignoreStyle,
+            IgnoredCodes = ignoredCodes
         };
     }
 
@@ -187,6 +195,7 @@ public static class Args
             "--format" => command is "render" or "frames",
             "--at" => command == "render",
             "--every" => command == "frames",
+            "--ignore" => command == "check",
             _ => false
         };
 
@@ -207,6 +216,27 @@ public static class Args
         }
 
         return dimension;
+    }
+
+    private static IReadOnlyList<string> ParseIgnore(string? value)
+    {
+        if (value is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        string[] codes = value.Split(',');
+        foreach (string code in codes)
+        {
+            if (code.Length != 5
+                || !code.StartsWith("VT00", StringComparison.Ordinal)
+                || code[4] is < '1' or > '9')
+            {
+                throw new CliError($"invalid --ignore \"{value}\"");
+            }
+        }
+
+        return codes;
     }
 
     private static string ParseFormat(string? value)

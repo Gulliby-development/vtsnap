@@ -306,7 +306,7 @@ public sealed class DiffIgnoreStyleTests
         Assert.Equal(
             "usage: vtsnap render [--cols N] [--rows N] [--format text|ansi|json] [--scrollback] [--at SECONDS] FILE\n"
             + "       vtsnap frames --every SECONDS [--cols N] [--rows N] [--format text|ansi] FILE\n"
-            + "       vtsnap check [--cols N] [--rows N] FILE\n"
+            + "       vtsnap check [--cols N] [--rows N] [--ignore CODES] FILE\n"
             + "       vtsnap diff [--cols N] [--rows N] [--ignore-style] A B\n",
             io.Stdout);
         Assert.Empty(io.Stderr);

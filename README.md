@@ -27,7 +27,7 @@ With `--help` as the only argument, vtsnap prints this usage and exits successfu
 ```text
 usage: vtsnap render [--cols N] [--rows N] [--format text|ansi|json] [--scrollback] [--at SECONDS] FILE
        vtsnap frames --every SECONDS [--cols N] [--rows N] [--format text|ansi] FILE
-       vtsnap check [--cols N] [--rows N] FILE
+       vtsnap check [--cols N] [--rows N] [--ignore CODES] FILE
        vtsnap diff [--cols N] [--rows N] [--ignore-style] A B
 ```
 
@@ -101,6 +101,8 @@ same
 ## Checks
 
 `check` reports findings in input order by position, then code, then order of occurrence. Positions are zero-based code-point indexes. End-state findings use the total number of input code points. Each finding is shown as `FILE:POS: CODE MESSAGE`, followed by a finding count.
+
+`--ignore CODES` (a comma-separated list such as `VT007,VT008`, for `check` only) leaves the findings with those codes out of the report and the count; when none is left, `check` prints `ok` and exits 0. A value that is not a list of codes from `VT001` to `VT009` is a command-line error: `invalid --ignore "VALUE"`.
 
 | Code | Meaning |
 | --- | --- |
