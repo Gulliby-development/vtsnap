@@ -18,7 +18,7 @@ public static class Cli
     private const string HelpText =
         "usage: vtsnap render [--cols N] [--rows N] [--format text|ansi|json] [--scrollback] [--at SECONDS] FILE\n"
         + "       vtsnap frames --every SECONDS [--cols N] [--rows N] [--format text|ansi] FILE\n"
-        + "       vtsnap check [--cols N] [--rows N] FILE\n"
+        + "       vtsnap check [--cols N] [--rows N] [--ignore CODES] FILE\n"
         + "       vtsnap diff [--cols N] [--rows N] [--ignore-style] A B\n";
 
     public static int Run(string[] args, IIo io)
@@ -93,7 +93,9 @@ public static class Cli
         string file = parsed.Files[0];
         Source source = LoadInput(parsed, file, io);
         Played played = Replay.Play(source, untilMicros: null);
-        IReadOnlyList<Finding> findings = Analysis.Findings(source, played);
+        IReadOnlyList<Finding> findings = Analysis.Findings(source, played)
+            .Where(finding => !parsed.IgnoredCodes.Contains(finding.Code))
+            .ToList();
         Result result = Analysis.RenderCheck(DisplayPath(file), findings);
         io.Out(result.Text);
         return result.Code;
