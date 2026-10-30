@@ -8,7 +8,10 @@ public static class Diff
     public static Result Compare(Snapshot a, Snapshot b) =>
         Compare(a, b, ignoreStyle: false);
 
-    public static Result Compare(Snapshot a, Snapshot b, bool ignoreStyle)
+    public static Result Compare(Snapshot a, Snapshot b, bool ignoreStyle) =>
+        Compare(a, b, ignoreStyle, ignoreCursor: false);
+
+    public static Result Compare(Snapshot a, Snapshot b, bool ignoreStyle, bool ignoreCursor)
     {
         ArgumentNullException.ThrowIfNull(a);
         ArgumentNullException.ThrowIfNull(b);
@@ -81,9 +84,10 @@ public static class Diff
             }
         }
 
-        if (a.CursorRow != b.CursorRow
-            || a.CursorCol != b.CursorCol
-            || a.CursorVisible != b.CursorVisible)
+        if (!ignoreCursor
+            && (a.CursorRow != b.CursorRow
+                || a.CursorCol != b.CursorCol
+                || a.CursorVisible != b.CursorVisible))
         {
             output.Append("cursor: row ");
             output.Append(Number(a.CursorRow + 1));

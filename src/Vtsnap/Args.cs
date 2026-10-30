@@ -15,6 +15,8 @@ public sealed record Parsed(
 {
     public bool IgnoreStyle { get; init; }
 
+    public bool IgnoreCursor { get; init; }
+
     public IReadOnlyList<string> IgnoredCodes { get; init; } = Array.Empty<string>();
 }
 
@@ -56,6 +58,7 @@ public static class Args
         string? ignoreValue = null;
         bool scrollback = false;
         bool ignoreStyle = false;
+        bool ignoreCursor = false;
         var files = new List<string>();
 
         for (int index = 1; index < args.Length; index++)
@@ -69,7 +72,7 @@ public static class Args
 
                 if (!IsValueOption(command, option)
                     && !(command == "render" && option == "--scrollback")
-                    && !(command == "diff" && option == "--ignore-style"))
+                    && !(command == "diff" && option is "--ignore-style" or "--ignore-cursor"))
                 {
                     throw new CliError($"unknown option \"{argument}\"");
                 }
@@ -93,6 +96,17 @@ public static class Args
                     }
 
                     ignoreStyle = true;
+                    continue;
+                }
+
+                if (option == "--ignore-cursor")
+                {
+                    if (hasEquals)
+                    {
+                        throw new CliError($"unknown option \"{argument}\"");
+                    }
+
+                    ignoreCursor = true;
                     continue;
                 }
 
@@ -184,6 +198,7 @@ public static class Args
             new ReadOnlyCollection<string>(files.ToArray()))
         {
             IgnoreStyle = ignoreStyle,
+            IgnoreCursor = ignoreCursor,
             IgnoredCodes = ignoredCodes
         };
     }
